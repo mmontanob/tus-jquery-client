@@ -63,7 +63,10 @@
       chunkSize: options.chunkSize,
 
       // Optional metadata about the uploading file
-      metadata: options.metadata || {}
+      metadata: options.metadata || {},
+
+      // Support XHR credentials
+      withCredentials: options.withCredentials
     };
 
     // Add tus version to headers
