@@ -118,7 +118,10 @@
     var options = {
       type: 'POST',
       url: self.options.endpoint,
-      headers: headers
+      headers: headers,
+      xhrFields: {
+        withCredentials: self.options.withCredentials
+      }
     };
 
     $.ajax(options)
@@ -144,7 +147,10 @@
       type: 'HEAD',
       url: this.fileUrl,
       cache: false,
-      headers: self.options.headers
+      headers: self.options.headers,
+      xhrFields: {
+        withCredentials: self.options.withCredentials
+      }
     };
 
     console.log('Resuming known url ' + this.fileUrl);
@@ -206,6 +212,9 @@
       cache: false,
       xhr: function() {
         return xhr;
+      },
+      xhrFields: {
+        withCredentials: self.options.withCredentials
       },
       headers: headers
     };
