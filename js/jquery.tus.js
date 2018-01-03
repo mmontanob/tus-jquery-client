@@ -66,7 +66,10 @@
       metadata: options.metadata || {},
 
       // Support XHR credentials
-      withCredentials: options.withCredentials
+      withCredentials: options.withCredentials,
+
+      // Response headers to read
+      responseHeaders: options.responseHeaders || ['Location']
     };
 
     // Add tus version to headers
@@ -86,6 +89,8 @@
     // Create a deferred and make our upload a promise object
     this._deferred = $.Deferred();
     this._deferred.promise(this);
+
+    this.readResponseHeaders = {};
   }
 
   // Creates a file resource at the configured tus endpoint and gets the url for it.
@@ -135,7 +140,11 @@
         if (!location) {
           return self._emitFail('Could not get url for file resource. ' + textStatus);
         }
-
+        self.readResponseHeaders = {};
+        for (var header in self.options.responseHeaders) {
+          var name = self.options.responseHeaders[header];
+          self.readResponseHeaders[name] = jqXHR.getResponseHeader(name);
+        }
         self.fileUrl = location;
         self._uploadFile(0);
       });
@@ -153,7 +162,6 @@
       }
     };
 
-    console.log('Resuming known url ' + this.fileUrl);
     $.ajax(options)
       .fail(function(jqXHR, textStatus, errorThrown) {
         // @TODO: Implement retry support
@@ -234,7 +242,6 @@
       })
       .done(function() {
         if(range_to === self.file.size){
-          console.log('done', arguments, self, self.fileUrl);
 
           if (self.options.resetAfter === true) {
             self._urlCache(false);
@@ -259,7 +266,7 @@
   };
 
   ResumableUpload.prototype._emitDone = function() {
-    this._deferred.resolveWith(this, [this.fileUrl, this.file]);
+    this._deferred.resolveWith(this, [this.fileUrl, this.file, this.readResponseHeaders]);
   };
 
   ResumableUpload.prototype._emitFail = function(err) {
@@ -273,7 +280,6 @@
     }
 
     if (url === false) {
-      console.log('Resetting any known cached url for ' + this.file.name);
       return localStorage.removeItem(fingerPrint);
     }
 
